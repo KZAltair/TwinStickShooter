@@ -74,9 +74,19 @@ HWND Window::GetCustomWindow() const
 	return hwnd;
 }
 
+int Window::GetWindowWidth() const
+{
+	return WindowWidth;
+}
+
+int Window::GetWindowHeight() const
+{
+	return WindowHeight;
+}
+
 void Window::ClearScreenSuperFast()
 {
-	memset(Colors, 0, 800 * 600 * 4);
+	memset(Colors, 0, WindowWidth * WindowHeight*4);
 }
 
 void Window::ResizeDIB(int BitmapWidth, int BitmapHeight)
@@ -258,15 +268,6 @@ LRESULT Window::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 		// ************ END MOUSE MESSAGES ************ //
-		case WM_PAINT:
-		{
-			PAINTSTRUCT pPaintStruct;
-			HDC hdc = BeginPaint(hwnd, &pPaintStruct);
-			int WindowWidth = pPaintStruct.rcPaint.right - pPaintStruct.rcPaint.left;
-			int WindowHeight = pPaintStruct.rcPaint.bottom - pPaintStruct.rcPaint.top;
-			UpdateWindowBuffer(hdc, WindowWidth, WindowHeight);
-			EndPaint(hwnd, &pPaintStruct);
-		}break;
 	}
 	return DefWindowProcA(hwnd, msg, wParam, lParam);
 }

@@ -5,7 +5,8 @@
 #include <string>
 //TODO: remake this from sleep to thread
 #include <thread>
-#include "Ball.h"
+#include "Vec2.h"
+#include "TileMap.h"
 
 class Engine
 {
@@ -38,6 +39,8 @@ private:
 	float cX = 0;
 private:
 	//Game stuff here
-	Ball ball;
-	RectF walls;
+	TileMap map;
+	Vec2 dir = {};
+	Vec2 pos = {80.0f, 80.0f};
+	float speed = 200.0f;
 };

@@ -10,7 +10,7 @@ int WINAPI WinMain(
 )
 {
 	//Create window
-	Window wnd(800, 600, hInst);
+	Window wnd(1280, 720, hInst);
 	//Create main engine
 	Engine engine(wnd);
 

@@ -12,6 +12,8 @@ public:
 	~Window();
 	bool RunMessageLoop();
 	HWND GetCustomWindow() const;
+	int GetWindowWidth() const;
+	int GetWindowHeight()const;
 private:
 	static LRESULT CALLBACK StartMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK MessageSetup(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);

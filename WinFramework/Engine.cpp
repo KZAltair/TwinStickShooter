@@ -2,8 +2,7 @@
 
 Engine::Engine(Window& wnd)
 	:
-	ball(Vec2(300.0f, 300.0f), Vec2(300.0f, 300.0f)),
-	walls(0.0f, 800.0f, 0.0f, 600.0f)
+	gfx(wnd.GetWindowWidth(), wnd.GetWindowHeight())
 {
 	Colors = wnd.GetColorBuffer();
 	QueryPerformanceFrequency(&PerfCountFrequecyResult);
@@ -49,8 +48,24 @@ void Engine::Run(Window& wnd)
 void Engine::Update(Window& wnd)
 {
 	float dt = ft.Go();
-	ball.Update(dt);
-	ball.DoWallCollision(walls);
+	dir = {};
+	if (wnd.kbd.KeyIsPressed('W'))
+	{
+		dir.y = -1.0f;
+	}
+	if (wnd.kbd.KeyIsPressed('S'))
+	{
+		dir.y = 1.0f;
+	}
+	if (wnd.kbd.KeyIsPressed('A'))
+	{
+		dir.x = -1.0f;
+	}
+	if (wnd.kbd.KeyIsPressed('D'))
+	{
+		dir.x = 1.0f;
+	}
+	pos += dir * speed * dt;
 }
 
 LARGE_INTEGER Engine::EngineGetWallClock() const
@@ -69,9 +84,14 @@ float Engine::EngineGetSecondsElapsed(LARGE_INTEGER Start, LARGE_INTEGER End) co
 void Engine::ComposeFrame()
 {
 	//gfx.FillScreenFast(Colors,255, 0, 0);
-	gfx.ClearScreenSuperFast(Colors);
 	//gfx.DrawPixel(Colors, 100, 100, 255, 0, 0);
-	ball.Draw(gfx, Colors);
+	gfx.ClearScreenSuperFast(Colors);
+	map.Draw(Colors, gfx);
+	int MinX = (int)pos.x;
+	int MinY = (int)pos.y;
+	int MaxX = (int)(pos.x + 60.0f);
+	int MaxY = (int)(pos.y + 80.0f);
+	gfx.DrawRectancle(Colors, MinX, MaxX, MinY, MaxY, 255, 255, 0);
 }
 
 

@@ -33,3 +33,35 @@ void TileMap::Draw(int* Colors, Graphics& gfx)
 		}
 	}
 }
+
+bool TileMap::IsWalkable(const Vec2& pos)
+{
+	int TileX = (int)(pos.x / TileWidth);
+	int TileY = (int)(pos.y / TileHeight);
+
+	if (pos.x > 0 && pos.x < TileWidth * countX &&
+		pos.y > 0 && pos.y < TileHeight * countY)
+	{
+		int TileValue = Map[TileY][TileX];
+		if (TileValue == 2)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+Vec2 TileMap::GetTileCorner() const
+{
+	return Vec2(UpperLeft, UpperTop);
+}
+
+tilemap_position TileMap::GetTileMapPosition(const Vec2& pos) const
+{
+	tilemap_position Result = {};
+	int TileX = (int)(pos.x / TileWidth);
+	int TileY = (int)(pos.y / TileHeight);
+	Result.TileX = TileX;
+	Result.TileY = TileY;
+	return Result;
+}

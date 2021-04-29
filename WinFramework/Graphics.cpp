@@ -36,12 +36,26 @@ void Graphics::DrawPixel(int* Colors, int x, int y, unsigned char r, unsigned ch
 
 void Graphics::DrawRectancle(int* Colors, int xMin, int xMax, int yMin, int yMax, unsigned char r, unsigned char g, unsigned char b)
 {
-	for (int y = yMin; y < yMax; y++)
+	if (yMin > yMax)
 	{
-		for (int x = xMin; x < xMax; x++)
+		for (int y = yMin; y != yMax; y--)
 		{
-			DrawPixel(Colors, x, y, r, g, b);
+			for (int x = xMin; x < xMax; x++)
+			{
+				DrawPixel(Colors, x, y, r, g, b);
+			}
 		}
 	}
+	else
+	{
+		for (int y = yMin; y < yMax; y++)
+		{
+			for (int x = xMin; x < xMax; x++)
+			{
+				DrawPixel(Colors, x, y, r, g, b);
+			}
+		}
+	}
+	
 }
 

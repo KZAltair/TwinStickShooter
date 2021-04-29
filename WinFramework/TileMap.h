@@ -1,5 +1,12 @@
 #pragma once
 #include "Graphics.h"
+#include "Vec2.h"
+
+struct tilemap_position
+{
+	int TileX;
+	int TileY;
+};
 
 class TileMap
 {
@@ -9,6 +16,9 @@ public:
 	TileMap operator=(const TileMap&) = delete;
 	~TileMap();
 	void Draw(int* Colors, Graphics& gfx);
+	bool IsWalkable(const Vec2& pos);
+	Vec2 GetTileCorner() const;
+	tilemap_position GetTileMapPosition(const Vec2& pos)const;
 
 private:
 	static constexpr unsigned int countX = 17;

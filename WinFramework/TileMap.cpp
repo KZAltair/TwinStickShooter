@@ -19,7 +19,7 @@ void TileMap::Draw(int* Colors, Graphics& gfx)
 	{
 		for (int x = 0; x < countX; x++)
 		{
-			int* TileMap = GetTileMap(MapX, MapY);
+			int* TileMap = GetTileMap(CanPos.MapX, CanPos.MapY);
 			if (TileMap)
 			{
 				int TileValue = GetTileValue(TileMap, x, y);
@@ -43,42 +43,29 @@ void TileMap::Draw(int* Colors, Graphics& gfx)
 	}
 }
 
-bool TileMap::IsWalkable(const Vec2& pos)
+bool TileMap::IsWorldWalkable(const raw_position& pos)
 {
-	TX = (int)(pos.x / TileWidth);
-	TY = (int)(pos.y / TileHeight);
-	MapX = rawPos.MapX;
-	MapY = rawPos.MapY;
+	bool isWalkable = false;
+	CanPos = GetCanonicalPosition(pos);
+	int* TileMap = GetTileMap(CanPos.MapX, CanPos.MapY);
+	isWalkable = IsTileWalkable(TileMap, CanPos.TileX, CanPos.TileY);
+	return isWalkable;
+}
 
-	if (TX < 0)
-	{
-		TX = countX + TX;
-		--MapX;
-	}
-	if (TX >= countX)
-	{
-		TX = TX - countX;
-		MapX++;
-	}
-	if (TY < 0)
-	{
-		TY = countY + TY;
-		--MapY;
-	}
-	if (TY >= countY)
-	{
-		TY = TY - countY;
-		MapY++;
-	}
-	int* TileMap = GetTileMap(MapX, MapY);
+bool TileMap::IsTileWalkable(int* TileMap, int TestTileX, int TestTileY)
+{
 	if (TileMap)
 	{
-		int TileValue = GetTileValue(TileMap, TX, TY);
-		if (TileValue == 2)
+		if (TestTileX >= 0 && TestTileX < countX &&
+			TestTileY >= 0 && TestTileY < countY)
 		{
-			return true;
+			unsigned int TileValue = GetTileValue(TileMap, TestTileX, TestTileY);
+			if (TileValue == 2)
+			{
+				return true;
+			}
 		}
-	}	
+	}
 	return false;
 }
 
@@ -87,9 +74,9 @@ Vec2 TileMap::GetTileCorner() const
 	return Vec2(UpperLeftX, UpperLeftY);
 }
 
-void TileMap::SetWorldPosition(const tilemap_position& Pos)
+void TileMap::SetWorldPosition(const canonical_position& Pos)
 {
-	rawPos = Pos;
+	CanPos = Pos;
 }
 
 int* TileMap::GetTileMap(unsigned int MX, unsigned int MY)
@@ -112,20 +99,48 @@ int TileMap::GetTileValue(int* TileMap, int TestTileX, int TestTileY) const
 	return TileValue;
 }
 
-tilemap_position TileMap::GetTileMapPosition() const
+canonical_position TileMap::GetCanonicalPosition(raw_position Pos)
 {
-	tilemap_position Result = rawPos;
+	canonical_position Result;
+	Result.MapX = Pos.MapX;
+	Result.MapY = Pos.MapY;
+
+	float X = Pos.X - UpperLeftX;
+	float Y = Pos.Y - UpperLeftY;
+
+	Result.TileX = (int)(X / TileWidth);
+	Result.TileY = (int)(Y / TileHeight);
+
+	Result.pos.x = X - Result.TileX * TileWidth;
+	Result.pos.y = Y - Result.TileY * TileHeight;
+
+	if (Result.TileX < 0)
+	{
+		Result.TileX = countX + Result.TileX;
+		--Result.MapX;
+	}
+	if (Result.TileX >= countX)
+	{
+		Result.TileX = Result.TileX - countX;
+		++Result.MapX;
+	}
+	if (Result.TileY < 0)
+	{
+		Result.TileY = countY + Result.TileY;
+		--Result.MapY;
+	}
+	if (Result.TileY >= countY)
+	{
+		Result.TileY = Result.TileY - countY;
+		++Result.MapY;
+	}
 	return Result;
 }
 
-tilemap_position TileMap::ToWorldLocation(tilemap_position* Pos)
+canonical_position TileMap::GetTileMapPosition() const
 {
-	tilemap_position Result = *Pos;
-	float X = Pos->pos.x - UpperLeftX;
-	float Y = Pos->pos.y - UpperLeftY;
-	Result.TileX = (int)(X / TileWidth);
-	Result.TileY = (int)(Y / TileHeight);
-	Result.pos.x = X - TX *TileWidth;
-	Result.pos.y = Y - TY *TileHeight;
+	canonical_position Result = CanPos;
 	return Result;
 }
+
+

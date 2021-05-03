@@ -42,6 +42,6 @@ private:
 	TileMap map;
 	Vec2 dir = {};
 	Vec2 pos = {160.0f, 160.0f};
-	tilemap_position PlayerP;
+	canonical_position PlayerP;
 	float speed = 80.0f;
 };

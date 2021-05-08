@@ -43,5 +43,8 @@ private:
 	Vec2 dir = {};
 	Vec2 pos = {160.0f, 160.0f};
 	canonical_position PlayerP;
-	float speed = 80.0f;
+	float speed = 1.0f;
+	static constexpr float PlayerWidthMultiplier = 0.4f;
+	float PlayerWidth = 0.0f;
+	float PlayerHeight = 1.0f;
 };

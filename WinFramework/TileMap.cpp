@@ -1,5 +1,6 @@
 #include "TileMap.h"
 #include <assert.h>
+#include <math.h>
 
 TileMap::TileMap()
 {
@@ -23,10 +24,10 @@ void TileMap::Draw(int* Colors, Graphics& gfx)
 			if (TileMap)
 			{
 				int TileValue = GetTileValue(TileMap, x, y);
-				int MinX = (int)UpperLeftX + x * (int)TileWidth;
-				int MaxX = MinX + (int)TileWidth;
-				int MinY = (int)UpperLeftY + y * (int)TileHeight;
-				int MaxY = MinY + (int)(TileHeight);
+				int MinX = (int)UpperLeftX + x * TileSizeInPixels;
+				int MaxX = MinX + TileSizeInPixels;
+				int MinY = (int)UpperLeftY + y * TileSizeInPixels;
+				int MaxY = MinY + TileSizeInPixels;
 				unsigned char ColorValue = 0;
 				if (TileValue == 1)
 				{
@@ -43,10 +44,9 @@ void TileMap::Draw(int* Colors, Graphics& gfx)
 	}
 }
 
-bool TileMap::IsWorldWalkable(const raw_position& pos)
+bool TileMap::IsWorldWalkable(const canonical_position& CanPos)
 {
 	bool isWalkable = false;
-	CanPos = GetCanonicalPosition(pos);
 	int* TileMap = GetTileMap(CanPos.MapX, CanPos.MapY);
 	isWalkable = IsTileWalkable(TileMap, CanPos.TileX, CanPos.TileY);
 	return isWalkable;
@@ -99,6 +99,11 @@ int TileMap::GetTileValue(int* TileMap, int TestTileX, int TestTileY) const
 	return TileValue;
 }
 
+int TileMap::GetTileSizeInPixels() const
+{
+	return TileSizeInPixels;
+}
+
 canonical_position TileMap::GetCanonicalPosition(raw_position Pos)
 {
 	canonical_position Result;
@@ -108,11 +113,11 @@ canonical_position TileMap::GetCanonicalPosition(raw_position Pos)
 	float X = Pos.X - UpperLeftX;
 	float Y = Pos.Y - UpperLeftY;
 
-	Result.TileX = (int)(X / TileWidth);
-	Result.TileY = (int)(Y / TileHeight);
+	Result.TileX = (int)(floorf(X / (float)(TileSizeInPixels)));
+	Result.TileY = (int)(floorf(Y / (float)(TileSizeInPixels)));
 
-	Result.pos.x = X - Result.TileX * TileWidth;
-	Result.pos.y = Y - Result.TileY * TileHeight;
+	Result.pos.x = X - (float)(Result.TileX * TileSizeInPixels);
+	Result.pos.y = Y - (float)Result.TileY * TileSizeInPixels;
 
 	if (Result.TileX < 0)
 	{
@@ -137,10 +142,49 @@ canonical_position TileMap::GetCanonicalPosition(raw_position Pos)
 	return Result;
 }
 
+void TileMap::RemapCoord(int TileCount, int* Map, int* Tile, float* TileRel)
+{
+	int Offset = (int)(floorf(*TileRel / (float)(TileSizeInMeters)));
+	*Tile += Offset;
+	*TileRel -= (float)(Offset * TileSizeInMeters);
+
+	assert(*TileRel >= 0.0f);
+	assert(*TileRel <= (float)TileSizeInMeters);
+
+	if (*Tile < 0)
+	{
+		*Tile = TileCount + *Tile;
+		--*Map;
+	}
+	if (*Tile >= TileCount)
+	{
+		*Tile = *Tile - TileCount;
+		++*Map;
+	}
+}
+
+canonical_position TileMap::RemapPosition(canonical_position Pos)
+{
+	canonical_position Result = Pos;
+	RemapCoord(countX, &Result.MapX, &Result.TileX, &Result.pos.x);
+	RemapCoord(countY, &Result.MapY, &Result.TileY, &Result.pos.y);
+	return Result;
+}
+
 canonical_position TileMap::GetTileMapPosition() const
 {
 	canonical_position Result = CanPos;
 	return Result;
+}
+
+int TileMap::GetPixelsFromMeters() const
+{
+	return MetersToPixels;
+}
+
+float TileMap::GetTileSizeInMeters() const
+{
+	return TileSizeInMeters;
 }
 
 

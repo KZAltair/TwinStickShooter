@@ -1,5 +1,7 @@
 #include "Engine.h"
 
+//TODO: Fix playerpos and metric system
+
 Engine::Engine(Window& wnd)
 	:
 	gfx(wnd.GetWindowWidth(), wnd.GetWindowHeight())
@@ -10,11 +12,13 @@ Engine::Engine(Window& wnd)
 	SleepIsGranular = (timeBeginPeriod(1) == TIMERR_NOERROR);
 
 	//Init here
+	PlayerWidth = 0.75f * map.GetTileSizeInMeters();
 	PlayerP.MapX = 0;
 	PlayerP.MapY = 0;
 	PlayerP.TileX = 2;
 	PlayerP.TileY = 2;
-	PlayerP.pos = pos;
+	PlayerP.pos.x = map.GetTileSizeInMeters() / 2.0f;
+	PlayerP.pos.y = map.GetTileSizeInMeters() - 0.01f;
 
 	map.SetWorldPosition(PlayerP);
 
@@ -75,25 +79,23 @@ void Engine::Update(Window& wnd)
 	{
 		dir.x = 1.0f;
 	}
-	Vec2 newPos = PlayerP.pos;
-	newPos += dir * speed * dt;
-	raw_position PlayerPos = { PlayerP.MapX, PlayerP.MapY, newPos.x, newPos.y };
-	raw_position LeftPos = PlayerPos;
-	LeftPos.X -= 30.0f;
-	raw_position RightPos = PlayerPos;
-	RightPos.X += 30.0f;
+	canonical_position PlayerPos = PlayerP;
+	PlayerPos.pos += dir * speed * dt;
+	PlayerPos = map.RemapPosition(PlayerPos);
+	
+	canonical_position LeftPos = PlayerPos;
+	LeftPos.pos.x -= (0.5f*PlayerWidth);
+	LeftPos = map.RemapPosition(LeftPos);
+
+	canonical_position RightPos = PlayerPos;
+	RightPos.pos.x += (0.5f * PlayerWidth);
+	RightPos = map.RemapPosition(RightPos);
 
 	if (map.IsWorldWalkable(PlayerPos) &&
 		map.IsWorldWalkable(LeftPos) &&
 		map.IsWorldWalkable(RightPos))
 	{
-		canonical_position CanPos = map.GetCanonicalPosition(PlayerPos);
-		PlayerP.MapX = CanPos.MapX;
-		PlayerP.MapY = CanPos.MapY;
-		PlayerP.TileX = CanPos.TileX;
-		PlayerP.TileY = CanPos.TileY;
-		PlayerP.pos.x = map.GetTileCorner().x + 80.0f * CanPos.TileX + CanPos.pos.x;
-		PlayerP.pos.y = map.GetTileCorner().y + 80.0f * CanPos.TileY + CanPos.pos.y;
+		PlayerP = PlayerPos;
 		map.SetWorldPosition(PlayerP);
 	}
 }
@@ -117,16 +119,18 @@ void Engine::ComposeFrame()
 	//gfx.DrawPixel(Colors, 100, 100, 255, 0, 0);
 	gfx.ClearScreenSuperFast(Colors);
 	map.Draw(Colors, gfx);
-	int MX = (int)(map.GetTileCorner().x + PlayerP.TileX * 80.0f);
-	int MY = (int)(map.GetTileCorner().y + PlayerP.TileY * 80.0f);
-	int MxX = (int)(map.GetTileCorner().x + (PlayerP.TileX * 80.0f + 80.0f));
-	int MxY = (int)(map.GetTileCorner().y + (PlayerP.TileY * 80.0f + 80.0f));
+	int MX = (int)(map.GetTileCorner().x + PlayerP.TileX * map.GetTileSizeInPixels());
+	int MY = (int)(map.GetTileCorner().y + PlayerP.TileY * map.GetTileSizeInPixels());
+	int MxX = (int)(map.GetTileCorner().x + (PlayerP.TileX * map.GetTileSizeInPixels() + map.GetTileSizeInPixels()));
+	int MxY = (int)(map.GetTileCorner().y + (PlayerP.TileY * map.GetTileSizeInPixels() + map.GetTileSizeInPixels()));
 	gfx.DrawRectancle(Colors, MX, MxX, MY, MxY, 0, 0, 0);
-	int MinX = (int)(PlayerP.pos.x - 30.0f);
-	int MinY = (int)(PlayerP.pos.y);
-	int MaxX = (int)(PlayerP.pos.x + 30.0f);
-	int MaxY = (int)(PlayerP.pos.y - 80.0f);
-	gfx.DrawRectancle(Colors, MinX, MaxX, MinY, MaxY, 255, 255, 0);
+
+	int PlayerLeft = (int)(map.GetTileCorner().x + PlayerP.TileX * map.GetTileSizeInPixels() +
+		PlayerP.pos.x * map.GetPixelsFromMeters() - 0.5f * PlayerWidth * map.GetPixelsFromMeters());
+	int PlayerTop = (int)(map.GetTileCorner().y + PlayerP.TileY * map.GetTileSizeInPixels() +
+		PlayerP.pos.y * map.GetPixelsFromMeters());
+	gfx.DrawRectancle(Colors, PlayerLeft, PlayerLeft + PlayerWidth * map.GetPixelsFromMeters(),
+		PlayerTop, PlayerTop - PlayerHeight * map.GetPixelsFromMeters(), 255, 255, 0);
 }
 
 

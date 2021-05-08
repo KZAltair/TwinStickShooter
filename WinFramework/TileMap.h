@@ -35,22 +35,29 @@ public:
 	TileMap operator=(const TileMap&) = delete;
 	~TileMap();
 	void Draw(int* Colors, Graphics& gfx);
-	bool IsWorldWalkable(const raw_position& pos);
+	bool IsWorldWalkable(const canonical_position& CanPos);
 	Vec2 GetTileCorner() const;
 	void SetWorldPosition(const canonical_position& Pos);
 	int* GetTileMap(unsigned int MX, unsigned int MY);
 	int GetTileValue(int* TileMap, int TestTileX, int TestTileY) const;
+	int GetTileSizeInPixels() const;
 	canonical_position GetCanonicalPosition(raw_position Pos);
+	void RemapCoord(int TileCount, int* Map, int* Tile, float* TileRel);
+	canonical_position RemapPosition(canonical_position Pos);
 	canonical_position GetTileMapPosition()const;
+	int GetPixelsFromMeters()const;
+	float GetTileSizeInMeters() const;
+
 private:
 	bool IsTileWalkable(int* TileMap, int TileX, int TileY);
 private:
 	static constexpr unsigned int countX = 17;
 	static constexpr unsigned int countY = 9;
 	static constexpr unsigned int mapSize = 2;
-	float TileWidth = 80.0f;
-	float TileHeight = 80.0f;
-	float UpperLeftX = -40.0f;
+	static constexpr int TileSizeInPixels = 80;
+	static constexpr float TileSizeInMeters = 1.0f;
+	static constexpr int MetersToPixels = TileSizeInPixels / TileSizeInMeters;
+	float UpperLeftX = -(float)(TileSizeInPixels)/2.0f;
 	float UpperLeftY = 0.0f;
 
 	world World[mapSize][mapSize];

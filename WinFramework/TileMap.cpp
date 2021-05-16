@@ -4,10 +4,8 @@
 
 TileMap::TileMap()
 {
-	World[0][0].TileMap = (int*)Map00;
-	World[0][1].TileMap = (int*)Map01;
-	World[1][0].TileMap = (int*)Map10;
-	World[1][1].TileMap = (int*)Map11;
+	TileMapChunk.Tiles = (u32*)TempTiles;
+	World.TileChunks = &TileMapChunk;
 }
 
 TileMap::~TileMap()
@@ -16,29 +14,38 @@ TileMap::~TileMap()
 
 void TileMap::Draw(int* Colors, Graphics& gfx)
 {
-	for (int y = 0; y < countY; y++)
+	u32 ScreenCenterX = (u32)(0.5f * 1280.0f);
+	u32 ScreenCenterY = (u32)(0.5f * 720.0f);
+	for (i32 RelRow = -10; RelRow < 10; ++RelRow)
 	{
-		for (int x = 0; x < countX; x++)
+		for (i32 RelCol = -20; RelCol < 20; ++RelCol)
 		{
-			int* TileMap = GetTileMap(CanPos.MapX, CanPos.MapY);
-			if (TileMap)
+			u32 Column = CanPos.AbsTileX + RelCol;
+			u32 Row = CanPos.AbsTileY + RelRow;
+			u32 TileValue = GetTileValueFromWorld(Column, Row);
+			
+			i32 MinX = ScreenCenterX - (i32)(CanPos.pos.x * GetPixelsFromMeters()) + RelCol * TileSizeInPixels;
+			i32 MaxX = MinX + TileSizeInPixels;
+			i32 MinY = ScreenCenterY - (i32)(CanPos.pos.y * GetPixelsFromMeters()) + RelRow * TileSizeInPixels;
+			i32 MaxY = MinY + TileSizeInPixels;
+			unsigned char ColorValue = 0;
+			if (TileValue == 1)
 			{
-				int TileValue = GetTileValue(TileMap, x, y);
-				int MinX = (int)UpperLeftX + x * TileSizeInPixels;
-				int MaxX = MinX + TileSizeInPixels;
-				int MinY = (int)UpperLeftY + y * TileSizeInPixels;
-				int MaxY = MinY + TileSizeInPixels;
-				unsigned char ColorValue = 0;
-				if (TileValue == 1)
-				{
-					ColorValue = 122;
-				}
-				if (TileValue == 2)
-				{
-					ColorValue = 80;
-				}
-				gfx.DrawRectancle(Colors, MinX, MaxX, MinY, MaxY, ColorValue, ColorValue, ColorValue);
+				ColorValue = 122;
 			}
+			if (TileValue == 2)
+			{
+				ColorValue = 80;
+			}
+			if (TileValue == 0)
+			{
+				ColorValue = 255;
+			}
+			if (Column == CanPos.AbsTileX && Row == CanPos.AbsTileY)
+			{
+				ColorValue = 0;
+			}
+			gfx.DrawRectancle(Colors, MinX, MaxX, MinY, MaxY, ColorValue, ColorValue, ColorValue);
 			
 		}
 	}
@@ -47,26 +54,64 @@ void TileMap::Draw(int* Colors, Graphics& gfx)
 bool TileMap::IsWorldWalkable(const canonical_position& CanPos)
 {
 	bool isWalkable = false;
-	int* TileMap = GetTileMap(CanPos.MapX, CanPos.MapY);
-	isWalkable = IsTileWalkable(TileMap, CanPos.TileX, CanPos.TileY);
+	tile_chunk_position ChunkPos = GetTileChunkPosition(CanPos.AbsTileX, CanPos.AbsTileY);
+	CurrentChunk = GetTileChunk(ChunkPos.TileChunkX, ChunkPos.TileChunkY);
+	isWalkable = IsTileWalkable(CurrentChunk, ChunkPos.RelTileX, ChunkPos.RelTileY);
 	return isWalkable;
 }
 
-bool TileMap::IsTileWalkable(int* TileMap, int TestTileX, int TestTileY)
+u32 TileMap::GetTileValueFromWorld(u32 TileX, u32 TileY)
 {
-	if (TileMap)
+	u32 TileValue = 0;
+	tile_chunk_position TestPos = GetTileChunkPosition(TileX, TileY);
+	tile_chunk* TestChunk = GetTileChunk(TestPos.TileChunkX, TestPos.TileChunkY);
+	TileValue = GetTileValueFromChunk(TestChunk, TestPos.RelTileX, TestPos.RelTileY);
+	return TileValue;
+}
+
+bool TileMap::IsTileWalkable(tile_chunk* Chunk, u32 TestTileX, u32 TestTileY)
+{
+	if (Chunk)
 	{
-		if (TestTileX >= 0 && TestTileX < countX &&
-			TestTileY >= 0 && TestTileY < countY)
+		u32 TileValue = GetTileValueFromChunk(Chunk, TestTileX, TestTileY);
+		if (TileValue == 2)
 		{
-			unsigned int TileValue = GetTileValue(TileMap, TestTileX, TestTileY);
-			if (TileValue == 2)
-			{
-				return true;
-			}
+			return true;
 		}
 	}
 	return false;
+}
+
+tile_chunk_position TileMap::GetTileChunkPosition(u32 AbsTileX, u32 AbsTileY)
+{
+	tile_chunk_position Result;
+	Result.TileChunkX = AbsTileX >> ChunkShift;
+	Result.TileChunkY = AbsTileY >> ChunkShift;
+	Result.RelTileX = AbsTileX & ChunkMask;
+	Result.RelTileY = AbsTileY & ChunkMask;
+	return Result;
+}
+
+tile_chunk* TileMap::GetTileChunk(u32 ChunkX, u32 ChunkY)
+{
+	tile_chunk* Result = nullptr;
+	if (ChunkX <= MapSizeX && ChunkY <= MapSizeY)
+	{
+		Result = &World.TileChunks[ChunkY * MapSizeX + ChunkX];
+	}
+	return Result;
+}
+
+u32 TileMap::GetTileValueFromChunk(tile_chunk* Chunk, u32 TestTileX, u32 TestTileY) const
+{
+	assert(TestTileX <= ChunkDim);
+	assert(TestTileY <= ChunkDim);
+	u32 TileValue = 0;
+	if (Chunk)
+	{
+		TileValue = Chunk->Tiles[TestTileY * ChunkDim + TestTileX];
+	}
+	return TileValue;
 }
 
 Vec2 TileMap::GetTileCorner() const
@@ -77,16 +122,6 @@ Vec2 TileMap::GetTileCorner() const
 void TileMap::SetWorldPosition(const canonical_position& Pos)
 {
 	CanPos = Pos;
-}
-
-int* TileMap::GetTileMap(unsigned int MX, unsigned int MY)
-{
-	assert(MX >= 0);
-	assert(MX < mapSize);
-	assert(MY >= 0);
-	assert(MY < mapSize);
-	int* Result = World[MY][MX].TileMap;
-	return Result;
 }
 
 int TileMap::GetTileValue(int* TileMap, int TestTileX, int TestTileY) const
@@ -104,70 +139,20 @@ int TileMap::GetTileSizeInPixels() const
 	return TileSizeInPixels;
 }
 
-canonical_position TileMap::GetCanonicalPosition(raw_position Pos)
+
+void TileMap::RemapCoord(u32* Tile, float* TileRel)
 {
-	canonical_position Result;
-	Result.MapX = Pos.MapX;
-	Result.MapY = Pos.MapY;
-
-	float X = Pos.X - UpperLeftX;
-	float Y = Pos.Y - UpperLeftY;
-
-	Result.TileX = (int)(floorf(X / (float)(TileSizeInPixels)));
-	Result.TileY = (int)(floorf(Y / (float)(TileSizeInPixels)));
-
-	Result.pos.x = X - (float)(Result.TileX * TileSizeInPixels);
-	Result.pos.y = Y - (float)Result.TileY * TileSizeInPixels;
-
-	if (Result.TileX < 0)
-	{
-		Result.TileX = countX + Result.TileX;
-		--Result.MapX;
-	}
-	if (Result.TileX >= countX)
-	{
-		Result.TileX = Result.TileX - countX;
-		++Result.MapX;
-	}
-	if (Result.TileY < 0)
-	{
-		Result.TileY = countY + Result.TileY;
-		--Result.MapY;
-	}
-	if (Result.TileY >= countY)
-	{
-		Result.TileY = Result.TileY - countY;
-		++Result.MapY;
-	}
-	return Result;
-}
-
-void TileMap::RemapCoord(int TileCount, int* Map, int* Tile, float* TileRel)
-{
-	int Offset = (int)(floorf(*TileRel / (float)(TileSizeInMeters)));
+	i32 Offset = (i32)(floorf(*TileRel / (float)(TileSizeInMeters)));
 	*Tile += Offset;
 	*TileRel -= (float)(Offset * TileSizeInMeters);
-
-	assert(*TileRel >= 0.0f);
 	assert(*TileRel <= (float)TileSizeInMeters);
-
-	if (*Tile < 0)
-	{
-		*Tile = TileCount + *Tile;
-		--*Map;
-	}
-	if (*Tile >= TileCount)
-	{
-		*Tile = *Tile - TileCount;
-		++*Map;
-	}
 }
 
 canonical_position TileMap::RemapPosition(canonical_position Pos)
 {
 	canonical_position Result = Pos;
-	RemapCoord(countX, &Result.MapX, &Result.TileX, &Result.pos.x);
-	RemapCoord(countY, &Result.MapY, &Result.TileY, &Result.pos.y);
+	RemapCoord(&Result.AbsTileX, &Result.pos.x);
+	RemapCoord(&Result.AbsTileY, &Result.pos.y);
 	return Result;
 }
 

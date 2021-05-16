@@ -1,7 +1,5 @@
 #include "Engine.h"
 
-//TODO: Fix playerpos and metric system
-
 Engine::Engine(Window& wnd)
 	:
 	gfx(wnd.GetWindowWidth(), wnd.GetWindowHeight())
@@ -13,10 +11,8 @@ Engine::Engine(Window& wnd)
 
 	//Init here
 	PlayerWidth = 0.75f * map.GetTileSizeInMeters();
-	PlayerP.MapX = 0;
-	PlayerP.MapY = 0;
-	PlayerP.TileX = 2;
-	PlayerP.TileY = 2;
+	PlayerP.AbsTileX = 2;
+	PlayerP.AbsTileY = 2;
 	PlayerP.pos.x = map.GetTileSizeInMeters() / 2.0f;
 	PlayerP.pos.y = map.GetTileSizeInMeters() - 0.01f;
 
@@ -119,18 +115,13 @@ void Engine::ComposeFrame()
 	//gfx.DrawPixel(Colors, 100, 100, 255, 0, 0);
 	gfx.ClearScreenSuperFast(Colors);
 	map.Draw(Colors, gfx);
-	int MX = (int)(map.GetTileCorner().x + PlayerP.TileX * map.GetTileSizeInPixels());
-	int MY = (int)(map.GetTileCorner().y + PlayerP.TileY * map.GetTileSizeInPixels());
-	int MxX = (int)(map.GetTileCorner().x + (PlayerP.TileX * map.GetTileSizeInPixels() + map.GetTileSizeInPixels()));
-	int MxY = (int)(map.GetTileCorner().y + (PlayerP.TileY * map.GetTileSizeInPixels() + map.GetTileSizeInPixels()));
-	gfx.DrawRectancle(Colors, MX, MxX, MY, MxY, 0, 0, 0);
+	u32 ScreenCenterX = (u32)(0.5f * 1280.0f);
+	u32 ScreenCenterY = (u32)(0.5f * 720.0f);
 
-	int PlayerLeft = (int)(map.GetTileCorner().x + PlayerP.TileX * map.GetTileSizeInPixels() +
-		PlayerP.pos.x * map.GetPixelsFromMeters() - 0.5f * PlayerWidth * map.GetPixelsFromMeters());
-	int PlayerTop = (int)(map.GetTileCorner().y + PlayerP.TileY * map.GetTileSizeInPixels() +
-		PlayerP.pos.y * map.GetPixelsFromMeters());
-	gfx.DrawRectancle(Colors, PlayerLeft, PlayerLeft + PlayerWidth * map.GetPixelsFromMeters(),
-		PlayerTop, PlayerTop - PlayerHeight * map.GetPixelsFromMeters(), 255, 255, 0);
+	i32 PlayerLeft = (i32)(ScreenCenterX - 0.5f * PlayerWidth * map.GetPixelsFromMeters());
+	i32 PlayerTop = (i32)(ScreenCenterY);
+	gfx.DrawRectancle(Colors, PlayerLeft, PlayerLeft + (i32)(PlayerWidth * map.GetPixelsFromMeters()),
+		PlayerTop, PlayerTop - (i32)(PlayerHeight * map.GetPixelsFromMeters()), 255, 255, 0);
 }
 
 

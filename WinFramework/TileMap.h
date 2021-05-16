@@ -4,27 +4,29 @@
 
 struct canonical_position
 {
-	int MapX;
-	int MapY;
-
-	int TileX;
-	int TileY;
+	u32 AbsTileX;
+	u32 AbsTileY;
 
 	Vec2 pos;
 };
 
-struct raw_position
+struct tile_chunk_position
 {
-	int MapX;
-	int MapY;
+	u32 TileChunkX;
+	u32 TileChunkY;
 
-	float X;
-	float Y;
+	u32 RelTileX;
+	u32 RelTileY;
+};
+
+struct tile_chunk
+{
+	u32* Tiles;
 };
 
 struct world
 {
-	int* TileMap;
+	tile_chunk* TileChunks;
 };
 
 class TileMap
@@ -38,30 +40,61 @@ public:
 	bool IsWorldWalkable(const canonical_position& CanPos);
 	Vec2 GetTileCorner() const;
 	void SetWorldPosition(const canonical_position& Pos);
-	int* GetTileMap(unsigned int MX, unsigned int MY);
 	int GetTileValue(int* TileMap, int TestTileX, int TestTileY) const;
 	int GetTileSizeInPixels() const;
-	canonical_position GetCanonicalPosition(raw_position Pos);
-	void RemapCoord(int TileCount, int* Map, int* Tile, float* TileRel);
+	void RemapCoord(u32* Tile, float* TileRel);
 	canonical_position RemapPosition(canonical_position Pos);
 	canonical_position GetTileMapPosition()const;
 	int GetPixelsFromMeters()const;
 	float GetTileSizeInMeters() const;
 
 private:
-	bool IsTileWalkable(int* TileMap, int TileX, int TileY);
+	bool IsTileWalkable(tile_chunk* Chunk, u32 TestTileX, u32 TestTileY);
+	tile_chunk_position GetTileChunkPosition(u32 AbsTileX, u32 AbsTileY);
+	tile_chunk* GetTileChunk(u32 ChunkX, u32 ChunkY);
+	u32 GetTileValueFromChunk(tile_chunk* Chunk, u32 TestTileX, u32 TestTileY) const;
+	u32 GetTileValueFromWorld(u32 TileX, u32 TileY);
 private:
 	static constexpr unsigned int countX = 17;
 	static constexpr unsigned int countY = 9;
-	static constexpr unsigned int mapSize = 2;
-	static constexpr int TileSizeInPixels = 80;
+	static constexpr u32 MapSizeX = 1;
+	static constexpr u32 MapSizeY = 1;
+	static constexpr u32 ChunkDim = 256;
+	static constexpr int TileSizeInPixels = 40;
 	static constexpr float TileSizeInMeters = 1.0f;
-	static constexpr int MetersToPixels = TileSizeInPixels / TileSizeInMeters;
+	static constexpr i32 MetersToPixels = (i32)((float)TileSizeInPixels / TileSizeInMeters);
 	float UpperLeftX = -(float)(TileSizeInPixels)/2.0f;
 	float UpperLeftY = 0.0f;
 
-	world World[mapSize][mapSize];
+	world World;
+	tile_chunk* CurrentChunk = nullptr;
+	tile_chunk TileMapChunk;
 	canonical_position CanPos = {};
+
+	u32 ChunkShift = 8;
+	u32 ChunkMask = 0xFF;
+
+	u32 TempTiles[ChunkDim][ChunkDim] =
+	{
+		{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+		{1,2,2,2,2,2,2,2,2,2,1,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1},
+		{1,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,1,1,2,2,2,2,2,2,1,1,1,1,2,2,2,2,2,1},
+		{1,2,2,2,2,2,2,2,1,2,1,2,2,2,2,2,1,1,2,2,2,2,2,2,1,2,2,1,2,2,2,2,2,1},
+		{1,2,1,1,1,2,2,2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,1},
+		{1,2,2,2,1,2,2,2,2,2,1,2,2,2,2,2,1,1,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,1},
+		{1,2,2,2,1,2,2,2,2,2,1,2,2,2,2,2,1,1,2,2,2,2,2,2,1,1,1,1,2,2,2,2,2,1},
+		{1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1},
+		{1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1},
+		{1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1},
+		{1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1},
+		{1,2,2,2,2,2,2,1,1,1,1,2,2,2,2,2,1,1,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,1},
+		{1,2,2,2,2,2,2,1,2,2,1,2,2,2,2,2,1,1,2,2,2,2,2,2,1,2,1,2,2,2,2,2,2,1},
+		{1,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,2,2,2,2,2,2,1},
+		{1,2,2,2,2,2,2,1,2,2,1,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,1},
+		{1,2,2,2,2,2,2,1,1,1,1,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,1},
+		{1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1},
+		{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+	};
 
 	int Map00[countY][countX] =
 	{

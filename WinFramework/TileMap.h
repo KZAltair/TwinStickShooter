@@ -59,9 +59,9 @@ private:
 private:
 	static constexpr unsigned int countX = 17;
 	static constexpr unsigned int countY = 9;
-	static constexpr u32 MapSizeX = 16;
-	static constexpr u32 MapSizeY = 16;
-	static constexpr u32 ChunkDim = 256;
+	static constexpr u32 MapSizeX = 10;
+	static constexpr u32 MapSizeY = 10;
+	static constexpr u32 ChunkDim = 16;
 	static constexpr int TileSizeInPixels = 10;
 	static constexpr float TileSizeInMeters = 1.0f;
 	static constexpr i32 MetersToPixels = (i32)((float)TileSizeInPixels / TileSizeInMeters);
@@ -73,11 +73,12 @@ private:
 	tile_chunk TileMapChunk;
 	canonical_position CanPos = {};
 
-	u32 ChunkShift = 8;
+	u32 ChunkShift = 4;
 	u32 ChunkMask = (1 << ChunkShift) - 1;
 	bool MapInit = false;
 	//u32 ChunkMask = 0xFF;
 
+	/*
 	u32 TempTiles[ChunkDim][ChunkDim] =
 	{
 		{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
@@ -148,4 +149,5 @@ private:
 		{1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1},
 		{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
 	};
+	*/
 };

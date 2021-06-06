@@ -27,9 +27,9 @@ void TileMap::Draw(int* Colors, Graphics& gfx)
 {
 	u32 ScreenCenterX = (u32)(0.5f * 1280.0f);
 	u32 ScreenCenterY = (u32)(0.5f * 720.0f);
-	for (i32 RelRow = -20; RelRow < 20; ++RelRow)
+	for (i32 RelRow = -10; RelRow < 10; ++RelRow)
 	{
-		for (i32 RelCol = -40; RelCol < 40; ++RelCol)
+		for (i32 RelCol = -20; RelCol < 20; ++RelCol)
 		{
 			u32 Column = CanPos.AbsTileX + RelCol;
 			u32 Row = CanPos.AbsTileY + RelRow;
@@ -108,7 +108,7 @@ tile_chunk_position TileMap::GetTileChunkPosition(u32 AbsTileX, u32 AbsTileY)
 tile_chunk* TileMap::GetTileChunk(u32 ChunkX, u32 ChunkY)
 {
 	tile_chunk* Result = nullptr;
-	if (ChunkX <= MapSizeX && ChunkY <= MapSizeY)
+	if (ChunkX < MapSizeX && ChunkY < MapSizeY)
 	{
 		Result = &World.TileChunks[ChunkY * MapSizeX + ChunkX];
 	}
@@ -196,8 +196,8 @@ void TileMap::InitMap()
 	//Step 1: Allocate dynamic memory for TileChunk
 	World.TileChunks = new tile_chunk[MapSizeX * MapSizeY];
 	//Step 2: Allocate dynamic memory Tiles
-	u32 TilesPerWidth = 17;
-	u32 TilesPerHeight = 9;
+	u32 TilesPerWidth = 16;
+	u32 TilesPerHeight = 16;
 	u32 TileValue = 2;
 	u32 RandomChoice = MapDist(rng);
 	for (u32 ScreenY = 0; ScreenY < MapSizeY; ScreenY++)

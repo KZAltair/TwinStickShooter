@@ -115,7 +115,7 @@ float Engine::EngineGetSecondsElapsed(LARGE_INTEGER Start, LARGE_INTEGER End) co
 
 void Engine::ComposeFrame()
 {
-	gfx.FillScreenFast(Colors,255, 0, 0);
+	gfx.FillScreenFast(Colors,120,120, 0);
 	//gfx.DrawPixel(Colors, 100, 100, 255, 0, 0);
 	//gfx.ClearScreenSuperFast(Colors);
 	map.Draw(Colors, gfx);

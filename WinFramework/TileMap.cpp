@@ -27,9 +27,9 @@ void TileMap::Draw(int* Colors, Graphics& gfx)
 {
 	u32 ScreenCenterX = (u32)(0.5f * 1280.0f);
 	u32 ScreenCenterY = (u32)(0.5f * 720.0f);
-	for (i32 RelRow = -10; RelRow < 10; ++RelRow)
+	for (i32 RelRow = -20; RelRow < 20; ++RelRow)
 	{
-		for (i32 RelCol = -20; RelCol < 20; ++RelCol)
+		for (i32 RelCol = -40; RelCol < 40; ++RelCol)
 		{
 			u32 Column = CanPos.AbsTileX + RelCol;
 			u32 Row = CanPos.AbsTileY + RelRow;
@@ -56,7 +56,10 @@ void TileMap::Draw(int* Colors, Graphics& gfx)
 			{
 				ColorValue = 0;
 			}
-			gfx.DrawRectancle(Colors, MinX, MaxX, MinY, MaxY, ColorValue, ColorValue, ColorValue);
+			if (TileValue != 0)
+			{
+				gfx.DrawRectancle(Colors, MinX, MaxX, MinY, MaxY, ColorValue, ColorValue, ColorValue);
+			}
 			
 		}
 	}
@@ -76,7 +79,10 @@ u32 TileMap::GetTileValueFromWorld(u32 TileX, u32 TileY)
 	u32 TileValue = 0;
 	tile_chunk_position TestPos = GetTileChunkPosition(TileX, TileY);
 	tile_chunk* TestChunk = GetTileChunk(TestPos.TileChunkX, TestPos.TileChunkY);
-	TileValue = GetTileValueFromChunk(TestChunk, TestPos.RelTileX, TestPos.RelTileY);
+	if (TestChunk)
+	{
+		TileValue = GetTileValueFromChunk(TestChunk, TestPos.RelTileX, TestPos.RelTileY);
+	}
 	return TileValue;
 }
 
@@ -122,7 +128,10 @@ u32 TileMap::GetTileValueFromChunk(tile_chunk* Chunk, u32 TestTileX, u32 TestTil
 	u32 TileValue = 0;
 	if (Chunk)
 	{
-		TileValue = Chunk->Tiles[TestTileY * ChunkDim + TestTileX];
+		if (Chunk->Tiles)
+		{
+			TileValue = Chunk->Tiles[TestTileY * ChunkDim + TestTileX];
+		}
 	}
 	return TileValue;
 }
@@ -186,64 +195,83 @@ void TileMap::SetTileValueInChunk(u32 AbsTileX, u32 AbsTileY, u32 TileValue)
 	tile_chunk* TestChunk = GetTileChunk(TestPos.TileChunkX, TestPos.TileChunkY);
 	if (TestChunk)
 	{
+		if (!TestChunk->Tiles)
+		{
+			TestChunk->Tiles = new u32[ChunkDim * ChunkDim];
+		}
 		TestChunk->Tiles[TestPos.RelTileY * ChunkDim + TestPos.RelTileX] = TileValue;
 	}
 }
 void TileMap::InitMap()
 {
-	std::mt19937 rng;
-	std::uniform_int_distribution<int> MapDist(0, 1);
+	
 	//Step 1: Allocate dynamic memory for TileChunk
 	World.TileChunks = new tile_chunk[MapSizeX * MapSizeY];
-	//Step 2: Allocate dynamic memory Tiles
-	u32 TilesPerWidth = 16;
-	u32 TilesPerHeight = 16;
-	u32 TileValue = 2;
-	u32 RandomChoice = MapDist(rng);
-	for (u32 ScreenY = 0; ScreenY < MapSizeY; ScreenY++)
+	for (u32 i = 0; i < MapSizeX * MapSizeY; i++)
 	{
-		for (u32 ScreenX = 0; ScreenX < MapSizeX; ScreenX++)
+		World.TileChunks[i].Tiles = nullptr;
+	}
+	//Step 2: Allocate dynamic memory Tiles
+	u32 TilesPerWidth = 32;
+	u32 TilesPerHeight = 32;
+	u32 TileValue = 2;
+	u32 RandomChoice = 0;
+	u32 ScreenX = 0;
+	u32 ScreenY = 0;
+	for (u32 ScreenIndex = 0; ScreenIndex < 50; ++ScreenIndex)
+	{
+		//World.TileChunks[ScreenY * MapSizeX + ScreenX].Tiles = new u32[ChunkDim * ChunkDim];
+		for (u32 TileY = 0; TileY < TilesPerHeight; TileY++)
 		{
-			World.TileChunks[ScreenY * MapSizeX + ScreenX].Tiles = new u32[ChunkDim * ChunkDim];
-			
-			for (u32 TileY = 0; TileY < TilesPerHeight; TileY++)
+			for (u32 TileX = 0; TileX < TilesPerWidth; TileX++)
 			{
-				for (u32 TileX = 0; TileX < TilesPerWidth; TileX++)
+				u32 AbsTileX = ScreenX * TilesPerWidth + TileX;
+				u32 AbsTileY = ScreenY * TilesPerHeight + TileY;
+				//Step 3: Initit world = SetTileValue
+				if ((TileX == 0) || (TileX == (TilesPerWidth - 1)))
 				{
-					u32 AbsTileX = ScreenX * TilesPerWidth + TileX;
-					u32 AbsTileY = ScreenY * TilesPerHeight + TileY;
-					//Step 3: Initit world = SetTileValue
-					if ((TileX == 0) || (TileX == (TilesPerWidth - 1)))
-					{
-						if (TileY == (TilesPerHeight / 2))
-						{
-							TileValue = 2;
-						}
-						else
-						{
-							TileValue = 1;
-						}
-					}
-					else if ((TileY == 0) || (TileY == (TilesPerHeight - 1)))
-					{
-						if (TileX == (TilesPerWidth / 2))
-						{
-							TileValue = 2;
-						}
-						else
-						{
-							TileValue = 1;
-						}
-					}
-					else
+					if (TileY == (TilesPerHeight / 2))
 					{
 						TileValue = 2;
 					}
-					SetTileValueInChunk(AbsTileX, AbsTileY, TileValue);
+					else
+					{
+						TileValue = 1;
+					}
 				}
+				else if ((TileY == 0) || (TileY == (TilesPerHeight - 1)))
+				{
+					if (TileX == (TilesPerWidth / 2))
+					{
+						TileValue = 2;
+					}
+					else
+					{
+						TileValue = 1;
+					}
+				}
+				else
+				{
+					TileValue = 2;
+				}
+				SetTileValueInChunk(AbsTileX, AbsTileY, TileValue);
 			}
 		}
+		std::random_device rd;
+		std::mt19937 rng(rd());
+		std::uniform_int_distribution<int> MapDist(0, 1);
+		RandomChoice = MapDist(rng);
+		if (RandomChoice == 0)
+		{
+			ScreenX++;
+		}
+		else
+		{
+			ScreenY++;
+		}
+
 	}
+	
 	MapInit = true;
 }
 

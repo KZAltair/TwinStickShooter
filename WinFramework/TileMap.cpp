@@ -1,24 +1,35 @@
 #include "TileMap.h"
 #include <assert.h>
 #include <math.h>
+#include <random>
 
 TileMap::TileMap()
 {
-	TileMapChunk.Tiles = (u32*)TempTiles;
-	World.TileChunks = &TileMapChunk;
+	//TileMapChunk.Tiles = (u32*)TempTiles;
+	//World.TileChunks = &TileMapChunk;
 }
 
 TileMap::~TileMap()
 {
+	for (u32 ScreenY = 0; ScreenY < MapSizeY; ScreenY++)
+	{
+		for (u32 ScreenX = 0; ScreenX < MapSizeX; ScreenX++)
+		{
+			delete[] World.TileChunks[ScreenY * MapSizeX + ScreenX].Tiles;
+			World.TileChunks[ScreenY * MapSizeX + ScreenX].Tiles = nullptr;
+		}
+	}
+	delete[] World.TileChunks;
+	World.TileChunks = nullptr;
 }
 
 void TileMap::Draw(int* Colors, Graphics& gfx)
 {
 	u32 ScreenCenterX = (u32)(0.5f * 1280.0f);
 	u32 ScreenCenterY = (u32)(0.5f * 720.0f);
-	for (i32 RelRow = -10; RelRow < 10; ++RelRow)
+	for (i32 RelRow = -20; RelRow < 20; ++RelRow)
 	{
-		for (i32 RelCol = -20; RelCol < 20; ++RelCol)
+		for (i32 RelCol = -40; RelCol < 40; ++RelCol)
 		{
 			u32 Column = CanPos.AbsTileX + RelCol;
 			u32 Row = CanPos.AbsTileY + RelRow;
@@ -68,6 +79,8 @@ u32 TileMap::GetTileValueFromWorld(u32 TileX, u32 TileY)
 	TileValue = GetTileValueFromChunk(TestChunk, TestPos.RelTileX, TestPos.RelTileY);
 	return TileValue;
 }
+
+
 
 bool TileMap::IsTileWalkable(tile_chunk* Chunk, u32 TestTileX, u32 TestTileY)
 {
@@ -167,9 +180,81 @@ int TileMap::GetPixelsFromMeters() const
 	return MetersToPixels;
 }
 
+void TileMap::SetTileValueInChunk(u32 AbsTileX, u32 AbsTileY, u32 TileValue)
+{
+	tile_chunk_position TestPos = GetTileChunkPosition(AbsTileX, AbsTileY);
+	tile_chunk* TestChunk = GetTileChunk(TestPos.TileChunkX, TestPos.TileChunkY);
+	if (TestChunk)
+	{
+		TestChunk->Tiles[TestPos.RelTileY * ChunkDim + TestPos.RelTileX] = TileValue;
+	}
+}
+void TileMap::InitMap()
+{
+	std::mt19937 rng;
+	std::uniform_int_distribution<int> MapDist(0, 1);
+	//Step 1: Allocate dynamic memory for TileChunk
+	World.TileChunks = new tile_chunk[MapSizeX * MapSizeY];
+	//Step 2: Allocate dynamic memory Tiles
+	u32 TilesPerWidth = 17;
+	u32 TilesPerHeight = 9;
+	u32 TileValue = 2;
+	u32 RandomChoice = MapDist(rng);
+	for (u32 ScreenY = 0; ScreenY < MapSizeY; ScreenY++)
+	{
+		for (u32 ScreenX = 0; ScreenX < MapSizeX; ScreenX++)
+		{
+			World.TileChunks[ScreenY * MapSizeX + ScreenX].Tiles = new u32[ChunkDim * ChunkDim];
+			
+			for (u32 TileY = 0; TileY < TilesPerHeight; TileY++)
+			{
+				for (u32 TileX = 0; TileX < TilesPerWidth; TileX++)
+				{
+					u32 AbsTileX = ScreenX * TilesPerWidth + TileX;
+					u32 AbsTileY = ScreenY * TilesPerHeight + TileY;
+					//Step 3: Initit world = SetTileValue
+					if ((TileX == 0) || (TileX == (TilesPerWidth - 1)))
+					{
+						if (TileY == (TilesPerHeight / 2))
+						{
+							TileValue = 2;
+						}
+						else
+						{
+							TileValue = 1;
+						}
+					}
+					else if ((TileY == 0) || (TileY == (TilesPerHeight - 1)))
+					{
+						if (TileX == (TilesPerWidth / 2))
+						{
+							TileValue = 2;
+						}
+						else
+						{
+							TileValue = 1;
+						}
+					}
+					else
+					{
+						TileValue = 2;
+					}
+					SetTileValueInChunk(AbsTileX, AbsTileY, TileValue);
+				}
+			}
+		}
+	}
+	MapInit = true;
+}
+
 float TileMap::GetTileSizeInMeters() const
 {
 	return TileSizeInMeters;
+}
+
+bool TileMap::IsMapInitialized() const
+{
+	return MapInit;
 }
 
 

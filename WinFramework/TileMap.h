@@ -46,21 +46,23 @@ public:
 	canonical_position RemapPosition(canonical_position Pos);
 	canonical_position GetTileMapPosition()const;
 	int GetPixelsFromMeters()const;
+	void InitMap();
 	float GetTileSizeInMeters() const;
-
+	bool IsMapInitialized()const;
 private:
 	bool IsTileWalkable(tile_chunk* Chunk, u32 TestTileX, u32 TestTileY);
 	tile_chunk_position GetTileChunkPosition(u32 AbsTileX, u32 AbsTileY);
 	tile_chunk* GetTileChunk(u32 ChunkX, u32 ChunkY);
 	u32 GetTileValueFromChunk(tile_chunk* Chunk, u32 TestTileX, u32 TestTileY) const;
 	u32 GetTileValueFromWorld(u32 TileX, u32 TileY);
+	void SetTileValueInChunk(u32 AbsTileX, u32 AbsTileY, u32 TileValue);
 private:
 	static constexpr unsigned int countX = 17;
 	static constexpr unsigned int countY = 9;
-	static constexpr u32 MapSizeX = 1;
-	static constexpr u32 MapSizeY = 1;
+	static constexpr u32 MapSizeX = 16;
+	static constexpr u32 MapSizeY = 16;
 	static constexpr u32 ChunkDim = 256;
-	static constexpr int TileSizeInPixels = 40;
+	static constexpr int TileSizeInPixels = 10;
 	static constexpr float TileSizeInMeters = 1.0f;
 	static constexpr i32 MetersToPixels = (i32)((float)TileSizeInPixels / TileSizeInMeters);
 	float UpperLeftX = -(float)(TileSizeInPixels)/2.0f;
@@ -72,7 +74,9 @@ private:
 	canonical_position CanPos = {};
 
 	u32 ChunkShift = 8;
-	u32 ChunkMask = 0xFF;
+	u32 ChunkMask = (1 << ChunkShift) - 1;
+	bool MapInit = false;
+	//u32 ChunkMask = 0xFF;
 
 	u32 TempTiles[ChunkDim][ChunkDim] =
 	{

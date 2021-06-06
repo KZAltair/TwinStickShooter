@@ -57,6 +57,10 @@ void Engine::Run(Window& wnd)
 
 void Engine::Update(Window& wnd)
 {
+	if (!map.IsMapInitialized())
+	{
+		map.InitMap();
+	}
 	float dt = ft.Go();
 	dir = {};
 	if (wnd.kbd.KeyIsPressed('W'))
@@ -111,9 +115,9 @@ float Engine::EngineGetSecondsElapsed(LARGE_INTEGER Start, LARGE_INTEGER End) co
 
 void Engine::ComposeFrame()
 {
-	//gfx.FillScreenFast(Colors,255, 0, 0);
+	gfx.FillScreenFast(Colors,255, 0, 0);
 	//gfx.DrawPixel(Colors, 100, 100, 255, 0, 0);
-	gfx.ClearScreenSuperFast(Colors);
+	//gfx.ClearScreenSuperFast(Colors);
 	map.Draw(Colors, gfx);
 	u32 ScreenCenterX = (u32)(0.5f * 1280.0f);
 	u32 ScreenCenterY = (u32)(0.5f * 720.0f);

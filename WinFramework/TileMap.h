@@ -62,7 +62,7 @@ private:
 	static constexpr u32 MapSizeX = 10;
 	static constexpr u32 MapSizeY = 10;
 	static constexpr u32 ChunkDim = 32;
-	static constexpr int TileSizeInPixels = 10;
+	static constexpr int TileSizeInPixels = 60;
 	static constexpr float TileSizeInMeters = 1.0f;
 	static constexpr i32 MetersToPixels = (i32)((float)TileSizeInPixels / TileSizeInMeters);
 	float UpperLeftX = -(float)(TileSizeInPixels)/2.0f;

@@ -136,9 +136,9 @@ u32 TileMap::GetTileValueFromChunk(tile_chunk* Chunk, u32 TestTileX, u32 TestTil
 	return TileValue;
 }
 
-Vec2 TileMap::GetTileCorner() const
+Vec2<float> TileMap::GetTileCorner() const
 {
-	return Vec2(UpperLeftX, UpperLeftY);
+	return Vec2<float>(UpperLeftX, UpperLeftY);
 }
 
 void TileMap::SetWorldPosition(const canonical_position& Pos)

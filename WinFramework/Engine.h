@@ -40,7 +40,7 @@ private:
 private:
 	//Game stuff here
 	TileMap map;
-	Vec2 dir = {};
+	Vec2<float> dir = {};
 	canonical_position PlayerP;
 	float speed = 5.0f;
 	static constexpr float PlayerWidthMultiplier = 0.4f;

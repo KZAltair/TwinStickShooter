@@ -7,7 +7,7 @@ struct canonical_position
 	u32 AbsTileX;
 	u32 AbsTileY;
 
-	Vec2 pos;
+	Vec2<float> pos;
 };
 
 struct tile_chunk_position
@@ -38,7 +38,7 @@ public:
 	~TileMap();
 	void Draw(int* Colors, Graphics& gfx);
 	bool IsWorldWalkable(const canonical_position& CanPos);
-	Vec2 GetTileCorner() const;
+	Vec2<float> GetTileCorner() const;
 	void SetWorldPosition(const canonical_position& Pos);
 	int GetTileValue(int* TileMap, int TestTileX, int TestTileY) const;
 	int GetTileSizeInPixels() const;
@@ -62,7 +62,7 @@ private:
 	static constexpr u32 MapSizeX = 10;
 	static constexpr u32 MapSizeY = 10;
 	static constexpr u32 ChunkDim = 32;
-	static constexpr int TileSizeInPixels = 80;
+	static constexpr int TileSizeInPixels = 10;
 	static constexpr float TileSizeInMeters = 1.0f;
 	static constexpr i32 MetersToPixels = (i32)((float)TileSizeInPixels / TileSizeInMeters);
 	float UpperLeftX = -(float)(TileSizeInPixels)/2.0f;

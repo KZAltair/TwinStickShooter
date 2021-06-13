@@ -126,6 +126,8 @@ void Engine::ComposeFrame()
 	i32 PlayerTop = (i32)(ScreenCenterY);
 	gfx.DrawRectancle(Colors, PlayerLeft, PlayerLeft + (i32)(PlayerWidth * map.GetPixelsFromMeters()),
 		PlayerTop, PlayerTop - (i32)(PlayerHeight * map.GetPixelsFromMeters()), 255, 255, 0);
+
+	gfx.DrawSprite(Colors, PlayerLeft, PlayerTop - 60, Rect<float>(0.0f, 60.0f, 0.0f, 60.0f), robot);
 }
 
 

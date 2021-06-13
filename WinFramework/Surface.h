@@ -10,7 +10,7 @@ class Surface
 {
 public:
 	Surface(int width, int height);
-	Surface(std::string fileName);
+	Surface(std::wstring& fileName);
 	Surface(const Surface&);
 	Surface& operator=(const Surface&);
 	~Surface();

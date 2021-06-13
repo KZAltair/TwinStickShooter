@@ -42,8 +42,11 @@ private:
 	TileMap map;
 	Vec2<float> dir = {};
 	canonical_position PlayerP;
-	float speed = 5.0f;
+	float speed = 2.0f;
 	static constexpr float PlayerWidthMultiplier = 0.4f;
 	float PlayerWidth = 0.0f;
 	float PlayerHeight = 1.0f;
+
+	std::wstring file = L"heropng.png";
+	Surface robot = Surface(file);
 };

@@ -3,6 +3,18 @@
 #include <fstream>
 #include "WinLib.h"
 
+#include <algorithm>
+
+namespace Gdiplus
+{
+	using std::min;
+	using std::max;
+}
+
+#include <gdiplus.h>
+
+namespace gdi = Gdiplus;
+
 Surface::Surface(int width, int height)
 	:
 	width(width),
@@ -11,8 +23,9 @@ Surface::Surface(int width, int height)
 {
 }
 
-Surface::Surface(std::string fileName)
+Surface::Surface(std::wstring& fileName)
 {
+#if 0
 	std::ifstream file(fileName, std::ios::binary);
 	assert(file);
 	assert(file.is_open() == true);
@@ -71,6 +84,36 @@ Surface::Surface(std::string fileName)
 		}
 
 	}
+#else
+	gdi::Bitmap bitmap(fileName.c_str());
+
+	width = bitmap.GetWidth();
+	height = bitmap.GetHeight();
+
+	pPixels = new Color[width * height];
+
+	const bool isAlpha = gdi::IsAlphaPixelFormat(bitmap.GetPixelFormat()) == TRUE;
+
+	gdi::Color pixel;
+	
+
+	for (int y = 0; y < height; y++)
+	{
+		for (int x = 0; x < width; x++)
+		{
+			bitmap.GetPixel(x, y, &pixel);
+			if (isAlpha)
+			{
+				PutPixel(x, y, Color(pixel.GetA(), pixel.GetR(), pixel.GetG(), pixel.GetB()));
+			}
+			else
+			{
+				PutPixel(x, y, Color(pixel.GetR(), pixel.GetG(), pixel.GetB()));
+			}
+		}
+	}
+
+#endif
 }
 
 Surface::Surface(const Surface& rhs)

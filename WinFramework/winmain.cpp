@@ -1,4 +1,6 @@
 #include "Engine.h"
+#include "ComInitializer.h"
+#include "GDIPlusManager.h"
 
 #pragma comment(lib, "winmm.lib")
 
@@ -9,6 +11,8 @@ int WINAPI WinMain(
 	int       nShowCmd
 )
 {
+	COMInitializer ComInit;
+	GDIPlusManager gdiMan;
 	//Create window
 	Window wnd(1280, 720, hInst);
 	//Create main engine

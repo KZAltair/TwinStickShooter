@@ -59,9 +59,9 @@ private:
 private:
 	static constexpr unsigned int countX = 17;
 	static constexpr unsigned int countY = 9;
-	static constexpr u32 MapSizeX = 10;
-	static constexpr u32 MapSizeY = 10;
-	static constexpr u32 ChunkDim = 32;
+	static constexpr u32 MapSizeX = 2;
+	static constexpr u32 MapSizeY = 2;
+	static constexpr u32 ChunkDim = 16;
 	static constexpr int TileSizeInPixels = 60;
 	static constexpr float TileSizeInMeters = 1.0f;
 	static constexpr i32 MetersToPixels = (i32)((float)TileSizeInPixels / TileSizeInMeters);

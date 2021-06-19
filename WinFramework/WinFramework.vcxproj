@@ -157,6 +157,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Animation.cpp" />
+    <ClCompile Include="Assets.cpp" />
     <ClCompile Include="ComInitializer.cpp" />
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="GDIPlusManager.cpp" />
@@ -170,6 +172,8 @@
     <ClCompile Include="winmain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Animation.h" />
+    <ClInclude Include="Assets.h" />
     <ClInclude Include="Colors.h" />
     <ClInclude Include="ComInitializer.h" />
     <ClInclude Include="Engine.h" />
@@ -178,6 +182,7 @@
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="Rect.h" />
+    <ClInclude Include="SpriteEffect.h" />
     <ClInclude Include="Surface.h" />
     <ClInclude Include="TileMap.h" />
     <ClInclude Include="Timer.h" />

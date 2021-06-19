@@ -7,6 +7,8 @@
 #include <thread>
 #include "Vec2.h"
 #include "TileMap.h"
+#include "Assets.h"
+#include "Animation.h"
 
 class Engine
 {
@@ -47,6 +49,5 @@ private:
 	float PlayerWidth = 0.0f;
 	float PlayerHeight = 1.0f;
 
-	std::wstring file = L"heropng.png";
-	Surface robot = Surface(file);
+	Animation* anim = nullptr;
 };

@@ -19,6 +19,7 @@ public:
 	int GetWidth() const;
 	int GetHeight() const;
 	Rect<float> GetRect() const;
+	void PremultiplyAlpha();
 private:
 	Color* pPixels = nullptr;
 	int width;

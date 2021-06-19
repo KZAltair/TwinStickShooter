@@ -1,4 +1,5 @@
 #include "Engine.h"
+#include "SpriteEffect.h"
 
 Engine::Engine(Window& wnd)
 	:
@@ -10,6 +11,8 @@ Engine::Engine(Window& wnd)
 	SleepIsGranular = (timeBeginPeriod(1) == TIMERR_NOERROR);
 
 	//Init here
+	Assets::get().LoadSprites();
+
 	PlayerWidth = 0.75f * map.GetTileSizeInMeters();
 	PlayerP.AbsTileX = 2;
 	PlayerP.AbsTileY = 2;
@@ -18,10 +21,14 @@ Engine::Engine(Window& wnd)
 
 	map.SetWorldPosition(PlayerP);
 
+	anim = new Animation(0.0f, 0.0f, 60.0f, 60.0f, 4, *Assets::get().GetSprite("hero"), 0.2f);
+
 }
 
 Engine::~Engine()
 {
+	delete anim;
+	anim = nullptr;
 }
 
 void Engine::Run(Window& wnd)
@@ -98,6 +105,8 @@ void Engine::Update(Window& wnd)
 		PlayerP = PlayerPos;
 		map.SetWorldPosition(PlayerP);
 	}
+
+	anim->Update(dt);
 }
 
 LARGE_INTEGER Engine::EngineGetWallClock() const
@@ -124,10 +133,12 @@ void Engine::ComposeFrame()
 
 	i32 PlayerLeft = (i32)(ScreenCenterX - 0.5f * PlayerWidth * map.GetPixelsFromMeters());
 	i32 PlayerTop = (i32)(ScreenCenterY);
-	gfx.DrawRectancle(Colors, PlayerLeft, PlayerLeft + (i32)(PlayerWidth * map.GetPixelsFromMeters()),
-		PlayerTop, PlayerTop - (i32)(PlayerHeight * map.GetPixelsFromMeters()), 255, 255, 0);
+	//gfx.DrawRectancle(Colors, PlayerLeft, PlayerLeft + (i32)(PlayerWidth * map.GetPixelsFromMeters()),
+		//PlayerTop, PlayerTop - (i32)(PlayerHeight * map.GetPixelsFromMeters()), 255, 255, 0);
 
-	gfx.DrawSprite(Colors, PlayerLeft, PlayerTop - 60, Rect<float>(0.0f, 60.0f, 0.0f, 60.0f), robot);
+	//gfx.DrawSprite(Colors, PlayerLeft, PlayerTop - 60, Rect<float>(0.0f, 60.0f, 0.0f, 60.0f), *Assets::get().GetSprite("hero"),
+		//SpriteEffect::AlphaBlend{ Colors });
+	anim->Draw(Colors, Vec2<float>((float)PlayerLeft, (float)PlayerTop), gfx);
 }
 
 

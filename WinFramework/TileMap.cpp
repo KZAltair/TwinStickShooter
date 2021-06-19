@@ -54,7 +54,7 @@ void TileMap::Draw(int* Colors, Graphics& gfx)
 			}
 			if (Column == CanPos.AbsTileX && Row == CanPos.AbsTileY)
 			{
-				ColorValue = 0;
+				ColorValue = 110;
 			}
 			if (TileValue != 0)
 			{

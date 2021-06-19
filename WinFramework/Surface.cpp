@@ -113,6 +113,10 @@ Surface::Surface(std::wstring& fileName)
 		}
 	}
 
+	if (isAlpha)
+	{
+		PremultiplyAlpha();
+	}
 #endif
 }
 
@@ -180,4 +184,21 @@ int Surface::GetHeight() const
 Rect<float> Surface::GetRect() const
 {
 	return Rect<float>(0.0f, (float)width, 0.0f, (float)height);
+}
+
+void Surface::PremultiplyAlpha()
+{
+	const int nPixels = GetWidth() * GetHeight();
+
+	for (int i = 0; i < nPixels; i++)
+	{
+		auto pix = pPixels[i];
+		const int alpha = pix.GetA();
+		//premultiply alpha
+		pix.SetR((pix.GetR() * alpha) / 256);
+		pix.SetG((pix.GetG() * alpha) / 256);
+		pix.SetB((pix.GetB() * alpha) / 256);
+
+		pPixels[i] = pix;
+	}
 }

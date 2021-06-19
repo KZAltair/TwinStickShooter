@@ -66,6 +66,12 @@
     <ClCompile Include="GDIPlusManager.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
+    <ClCompile Include="Assets.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Graphics.h">
@@ -109,6 +115,15 @@
     </ClInclude>
     <ClInclude Include="GDIPlusManager.h">
       <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteEffect.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>Graphics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
